@@ -1,7 +1,6 @@
 import sqlite3
 import json
 import os
-from database import load_dataset
 
 DB_PATH = 'sqlsense.db'
 
@@ -22,6 +21,42 @@ def setup_database():
             column_name TEXT,
             column_type TEXT,
             db_id TEXT
-            )
+        )
     """)
-    
+
+    sample_table = {
+        'departments': [
+            ('dept_id', 'INTEGER'),
+            ('dept_name', 'TEXT')
+            ('building', 'TEXT'),
+            ('budget', 'REAL')
+        ],
+        'enrollments':[
+            ('enrollement_id', 'INTEGER'),
+            ('student_id', 'INTEGER'),
+            ('dept_id', 'INTEGER'),
+            ('student_count', 'INTEGER'),
+            ('semester', 'TEXT')
+        ],
+        'courses': [
+            ('course_id', 'INTEGER'),
+            ('course_name', 'TEXT'),
+            ('dept_id', 'INTEGER'),
+            ('its_online', 'INTEGER'),
+            ('credits', 'INTEGER')
+        ],
+        'students': [
+            ('student_id', 'INTEGER'),
+            ('name', 'TEXT'),
+            ('age', 'INTEGER'),
+            ('dept_id', 'INTEGER'),
+            ('gpa', 'REAL')
+        ],
+        'instructors': [
+            ('instructor_id', 'INTEGER'),
+            ('name', 'TEXT'),
+            ('dept_id', 'INTEGER'),
+            ('salary', 'REAL')
+        ]
+    }
+
