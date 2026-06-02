@@ -11,7 +11,7 @@ def execute_sql(sql: str) -> dict:
         conn.close()
 
         results = [dict(zip(columns, row)) for row in rows]
-        return {'sucess':True, 'results': results, 'error': None}
+        return {"success": True, "results": results, "error": None}
 
     except Exception as e:
         return {'success':False, 'results': None, 'error': str(e)}
