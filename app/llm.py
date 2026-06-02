@@ -35,13 +35,15 @@ def generate_sql(question: str, retrieved_tables: list, schema: dict) -> dict:
     try:
         
         response = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1  
         )
         sql = response.choices[0].message.content.strip()
+        sql = sql.replace("```sql", "").replace("```", "").strip()
 
         return {"sql": sql, "prompt_used": prompt, "error": None}
 
     except Exception as e:
+        print("ERROR:", str(e))
         return {"sql": None, "prompt_used": prompt, "error": str(e)}
