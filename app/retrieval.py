@@ -23,4 +23,20 @@ def build_index(db_id):
     return index, tables, descriptions
 
 
-def retrieve_tables
+def retrieve_tables(question:str, top_k: int = 3):
+    schema = get_schema_info()
+    index, tables, descriptions = build_index(schema)
+
+    question_vec = model.encode([question])
+    distances, indices = index.search(np.array(question_vec), top_k)
+
+    results = []
+    for i, idx in enumerate(indices[0]):
+        score = float(1/(1+distances[0][i]))
+        results.append({
+            'table': tables[idx],
+            'score': round(score,4),
+            'reason': f'Matched with: {descriptions[idx]}'
+        })
+    
+    return results
