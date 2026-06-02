@@ -27,3 +27,47 @@ def run_benchmark():
     execution_success = 0
     total_latency = 0
 
+    for item in BENCHMARK_QUESTION:
+        question = item["question"]
+        expected = item["expected_tables"]
+        start_time = time.time()
+
+        retrieved = retrieve_tables(question)
+        retrieval_names = [r['table'] for r in retrieved]
+
+        matched = len(set(expected) & set(retrieval_names))
+        if matched ==  len(expected):
+            retrieval_success += 1
+        
+        result = generate_sql(question, retrieved, schema)
+        sql = result["sql"]
+
+        if sql:
+            validation = full_validation(sql, schema)
+            if validation["is_valid_syntax"] and not validation["parsing_errors"]:
+                parsing_success += 1
+
+            exec_result = execute_sql(sql)
+            if exec_result["success"]:
+                execution_success += 1
+
+        total_latency += (time.time() - start) * 1000
+
+    return {
+        'total_queries': total,
+        'metrics': {
+            "retrieval_recall": round(retrieval_success / total, 2),
+            "parsing_success_rate": round(parsing_success / total, 2),
+            "execution_success_rate": round(execution_success / total, 2),
+            "average_latency_ms": round(total_latency / total, 2)
+        },
+         "error_analysis": {
+            "retrieval_failures": total - retrieval_success,
+            "parsing_failures": total - parsing_success,
+            "execution_failures": total - execution_success
+        }
+    }
+        
+
+
+        
