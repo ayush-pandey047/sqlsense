@@ -14,4 +14,4 @@ def execute_sql(sql: str) -> dict:
         return {'sucess':True, 'results': results, 'error': None}
 
     except Exception as e:
-        return {'sucess':False, 'results': None, 'error': str(e)}
+        return {'success':False, 'results': None, 'error': str(e)}
