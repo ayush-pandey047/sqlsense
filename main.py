@@ -69,3 +69,11 @@ async def generate(req: GenerateRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/benchmark")
+async def benchmark():
+    try:
+        return run_benchmark()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
