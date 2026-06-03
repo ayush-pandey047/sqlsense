@@ -6,6 +6,11 @@ from database import get_schema_info
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
+def build_descriptions(schema: dict):
+    name_words = table_name.replace("_", " ").lower()
+    col_names = ", ".join([c['column'].replace("_", " ") for c in columns])
+    return f"{name_words}. Columns: {col_names}. Table about {name_words}."
+
 def build_index(schema: dict):
     tables = []
     descriptions = []
@@ -23,7 +28,7 @@ def build_index(schema: dict):
 
     return index, tables, descriptions
 
-def retrieve_tables(question: str, top_k: int = 3):
+def retrieve_tables(question: str, top_k: int = 5):
     schema = get_schema_info()
     index, tables, descriptions = build_index(schema)
 
