@@ -47,3 +47,25 @@ async def retrieve(req: QuestionRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post('/generate')
+async def generate(req: GenerateRequest):
+    try:
+        schema = get_schema_info()
+        retrieved = retrieve_tables(req.question) if req.use_retrieved_context else []
+        result = generate_sql(req.question, retrieved, schema)
+        validation = full_validation(result["sql"], schema) if result["sql"] else {"is_valid_syntax": False, "parsing_errors": "No SQL generated"}
+        execution = execute_sql(result["sql"]) if validation["is_valid_syntax"] else {"success": False, "results": []}
+
+        return {
+            "sql": result["sql"],
+            "retrieved_tables": [r["table"] for r in retrieved],
+            "is_valid_syntax": validation["is_valid_syntax"],
+            "parsing_errors": validation["parsing_errors"],
+            "execution_results": execution["results"],
+            "confidence": round(sum(r["score"] for r in retrieved) / len(retrieved), 2) if retrieved else 0,
+            "prompt_used": result["prompt_used"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
