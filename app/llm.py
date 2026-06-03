@@ -1,4 +1,5 @@
 import os
+import re
 from groq import Groq
 from dotenv import load_dotenv
 
@@ -11,7 +12,13 @@ def build_prompt(question: str, retrieved_tables: list, schema: dict) -> str:
     for item in retrieved_tables:
         table = item["table"]
         if table in schema:
-            cols = ", ".join([f"{c['column']} ({c['type']})" for c in schema[table]])
+            seen_cols = set()
+            unique_cols = []
+            for c in schema[table]:
+                if c['column'] not in seen_cols:
+                    seen_cols.add(c['column'])
+                    unique_cols.append(f"{c['column']} ({c['type']})")
+            cols = ", ".join(unique_cols[:10]) 
             schema_str += f"\nTable: {table}\nColumns: {cols}\n"
 
     examples = """
@@ -51,6 +58,10 @@ def generate_sql(question: str, retrieved_tables: list, schema: dict) -> dict:
         )
         sql = response.choices[0].message.content.strip()
         sql = sql.replace("```sql", "").replace("```", "").strip()
+        match = re.search(r'(SELECT|INSERT|UPDATE|DELETE|WITH)[\s\S]+?;', sql, re.IGNORECASE)
+        if match:
+            sql = match.group(0).strip()
+
 
         return {"sql": sql, "prompt_used": prompt, "error": None}
 
