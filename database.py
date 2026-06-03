@@ -50,3 +50,20 @@ def setup_database():
     conn.commit()
     conn.close()
     print(f"Database setup complete")
+
+def get_schema_info():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT table_name, column_name, column_type, db_id FROM schema_info")
+    rows = cursor.fetchall()
+    conn.close()
+
+    schema = {}
+    for table, col, dtype, db_id in rows:
+        if table not in schema:
+            schema[table] = []
+        schema[table].append({"column": col, "type": dtype, "db": db_id})
+    return schema
+
+if __name__ == "__main__":
+    setup_database()
