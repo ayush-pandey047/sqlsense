@@ -6,16 +6,16 @@ from app.execution import execute_sql
 from database import get_schema_info
 
 BENCHMARK_QUESTIONS = [
-    {"question": "Show all departments", "expected_tables": ["departments"]},
-    {"question": "Which departments have more than 100 students?", "expected_tables": ["departments", "enrollments"]},
-    {"question": "List all online courses", "expected_tables": ["courses"]},
-    {"question": "Show students with GPA above 3.5", "expected_tables": ["students"]},
-    {"question": "Which instructors earn more than 50000?", "expected_tables": ["instructors"]},
-    {"question": "Count students per department", "expected_tables": ["departments", "enrollments"]},
-    {"question": "Show all courses with credits more than 3", "expected_tables": ["courses"]},
-    {"question": "List departments with their buildings", "expected_tables": ["departments"]},
-    {"question": "Show enrolled students in Fall2024", "expected_tables": ["enrollments"]},
-    {"question": "Which students are in Computer Science?", "expected_tables": ["students", "departments"]},
+    {"question": "Show all departments", "expected_tables": ["sis_department"]},
+    {"question": "List all students in a department", "expected_tables": ["student_department"]},
+    {"question": "Show department names and school names", "expected_tables": ["sis_department"]},
+    {"question": "Which departments are degree granting?", "expected_tables": ["sis_department"]},
+    {"question": "Show space usage by department", "expected_tables": ["space_supervisor_usage"]},
+    {"question": "List department codes and full names", "expected_tables": ["sis_department"]},
+    {"question": "Show departments with their school codes", "expected_tables": ["student_department"]},
+    {"question": "Which departments have supervisors?", "expected_tables": ["space_supervisor_usage"]},
+    {"question": "Show department budget codes", "expected_tables": ["sis_department"]},
+    {"question": "List all school names", "expected_tables": ["sis_department"]},
 ]
 
 def run_benchmark():

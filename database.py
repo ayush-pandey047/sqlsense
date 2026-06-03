@@ -41,11 +41,11 @@ def setup_database():
                 pass  
 
 
+            seen = set()
             for col, dtype in zip(columns, types):
-                cursor.execute("""
-                    INSERT INTO schema_info (table_name, column_name, column_type, db_id)
-                    VALUES (?,?,?,?)
-                """, (table_name, col.lower(), dtype, db_id))
+                if col.lower() not in seen:
+                    seen.add(col.lower())
+                    cursor.execute("""INSERT INTO schema_info (table_name, column_name, column_type, db_id) VALUES (?,?,?,?)""", (table_name, col.lower(), dtype, db_id))
 
     conn.commit()
     conn.close()
