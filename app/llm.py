@@ -14,19 +14,29 @@ def build_prompt(question: str, retrieved_tables: list, schema: dict) -> str:
             cols = ", ".join([f"{c['column']} ({c['type']})" for c in schema[table]])
             schema_str += f"\nTable: {table}\nColumns: {cols}\n"
 
-    prompt = f"""You are an expert SQL generator. Generate a valid SQLite SQL query.
+    examples = """
+                Examples:
+                Q: Show all department names
+                SQL: SELECT DISTINCT department_name FROM sis_department;
 
-Database Schema:
-{schema_str}
+                Q: List departments with their school names
+                SQL: SELECT department_name, school_name FROM sis_department;
 
-Question: {question}
+                Q: Show departments that are degree granting
+                SQL: SELECT department_name FROM sis_department WHERE is_degree_granting = 'Y';
 
-Rules:
-- Return ONLY the SQL query, no explanation
-- Use only the tables and columns provided
-- Make sure the SQL is valid SQLite syntax
+                Q: Count students per department
+                SQL: SELECT department_name, COUNT(*) as total FROM student_department GROUP BY department_name;
 
-SQL:"""
+                Q: Show space usage for each department
+                SQL: SELECT dept_names, sqft, research_volume FROM space_supervisor_usage; """
+
+    prompt = f"""You are an expert SQL generator for enterprise databases. Generate a valid SQLite SQL query.
+                        Database Schema:
+                            {schema_str}
+                            {examples}
+                        Now answer this:
+                        Q: {question}SQL:"""
     return prompt
 
 def generate_sql(question: str, retrieved_tables: list, schema: dict) -> dict:
