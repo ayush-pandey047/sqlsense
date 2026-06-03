@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from app.retrieval import retrieve_tables
 from app.llm import generate_sql
 from app.validation import full_validation
@@ -7,38 +7,39 @@ from app.execution import execute_sql
 from app.benchmark import run_benchmark
 from database import get_schema_info, setup_database
 
-app = FastAPI(title='SqlSense', description = 'Natural Language to SQL API')
+app = FastAPI(title="SqlSense", description="Natural Language to SQL API")
 
 @app.on_event("startup")
-async def startup_event():
+async def startup():
     setup_database()
 
+class QuestionRequest(BaseModel):
+    question: str
 
-class QueryRequest(BaseModel):
-    question:str 
-
-    @validator('question')
+    @field_validator('question')
+    @classmethod
     def question_not_empty(cls, v):
         if not v or len(v.strip()) == 0:
-            raise ValueError('Question cannot be empty')
+            raise ValueError("Question cannot be empty")
         if len(v) > 500:
-            raise ValueError('Question is too long')
+            raise ValueError("Question too long")
         return v
 
 class GenerateRequest(BaseModel):
-    question:str 
-    use_retrieval:bool = True
+    question: str
+    use_retrieved_context: bool = True
 
-    @validator('question')
+    @field_validator('question')
+    @classmethod
     def question_not_empty(cls, v):
         if not v or len(v.strip()) == 0:
-            raise ValueError('Question cannot be empty')
+            raise ValueError("Question cannot be empty")
         return v
 
-@app.post('/retrive')
-async def retrieve(req: QuestionRequest):
+@app.post("/retrieve")
+async def retrieve(request: QuestionRequest):
     try:
-        results = retrieve_tables(req.question)
+        results = retrieve_tables(request.question)
         return {
             "retrieved_tables": [r["table"] for r in results],
             "scores": [r["score"] for r in results],
@@ -48,13 +49,12 @@ async def retrieve(req: QuestionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-@app.post('/generate')
-async def generate(req: GenerateRequest):
+@app.post("/generate-sql")
+async def generate(request: GenerateRequest):
     try:
         schema = get_schema_info()
-        retrieved = retrieve_tables(req.question) if req.use_retrieved_context else []
-        result = generate_sql(req.question, retrieved, schema)
+        retrieved = retrieve_tables(request.question) if request.use_retrieved_context else []
+        result = generate_sql(request.question, retrieved, schema)
         validation = full_validation(result["sql"], schema) if result["sql"] else {"is_valid_syntax": False, "parsing_errors": "No SQL generated"}
         execution = execute_sql(result["sql"]) if validation["is_valid_syntax"] else {"success": False, "results": []}
 
@@ -69,7 +69,6 @@ async def generate(req: GenerateRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/benchmark")
 async def benchmark():
