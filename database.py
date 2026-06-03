@@ -40,6 +40,17 @@ def setup_database():
             except Exception:
                 pass  
 
+            try:
+                example_rows = row.get('example_rows', [])
+                if example_rows:
+                    rows_data = json.loads(example_rows) if isinstance(example_rows, str) else example_rows
+                    if rows_data and len(rows_data) > 0:
+                        for data_row in rows_data[:5]:
+                            if isinstance(data_row, list):
+                                placeholders = ", ".join(["?" for _ in data_row])
+                                cursor.execute(f"INSERT OR IGNORE INTO {table_name} VALUES ({placeholders})", data_row)
+            except Exception:
+                pass
 
             seen = set()
             for col, dtype in zip(columns, types):
